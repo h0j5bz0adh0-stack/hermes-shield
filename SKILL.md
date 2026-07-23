@@ -1,7 +1,7 @@
 ---
 name: hermes-shield
 description: "Use when backing up, restoring, or syncing Hermes Agent state. Full backup/restore engine with encryption, versioning, Google Drive sync, and cross-agent support."
-version: 1.1.0
+version: 1.3.0
 author: Reza (Autonexus)
 license: MIT
 platforms: [linux, macos]
@@ -18,7 +18,7 @@ metadata:
 
 ## Overview
 
-Hermes Shield is a complete backup/restore engine for AI agent configurations with **Google Drive sync**. Back up skills, plugins, cron jobs, memory, and config with AES-256 encryption, automatic versioning, and cloud sync.
+Hermes Shield is a complete backup/restore engine for AI agent configurations with **Google Drive sync**. Back up skills, plugins, cron jobs, memory, and config with AES-256 encryption, automatic versioning, and cloud sync. Works on headless servers without a browser.
 
 ## When to Use
 
@@ -45,74 +45,72 @@ Hermes Shield is a complete backup/restore engine for AI agent configurations wi
 | `verify FILE` | Verify backup integrity |
 | `stats` | Show statistics |
 | `config` | View/update config |
-| `setup-rclone` | Interactive Google Drive setup |
+| `connect` | Connect Google Drive (headless) |
+| `setup` | Interactive setup wizard |
+| `setup-auto` | Non-interactive setup (for Hermes) |
+| `token <JSON>` | Apply Google Drive auth token |
 
 ## Installation
 
 ```bash
 # Clone
-git clone https://github.com/your-username/hermes-shield.git
+git clone https://github.com/h0j5bz0adh0-stack/hermes-shield.git
 cd hermes-shield
 
 # Install dependencies
 pip install cryptography
-# rclone is pre-installed on most systems, or:
+# rclone for Google Drive support:
 curl -fsSL https://rclone.org/install.sh | bash
 
 # Test
 python3 scripts/hermes-shield.py stats
 ```
 
-## Google Drive Setup (One-Time)
+## As Hermes Skill
 
 ```bash
-# Run interactive setup
-python3 scripts/hermes-shield.py setup-rclone
+mkdir -p ~/.hermes/skills/devops/hermes-shield
+cp SKILL.md ~/.hermes/skills/devops/hermes-shield/
+cp -r scripts ~/.hermes/skills/devops/hermes-shield/
+pip install cryptography
+```
 
-# Or manually:
-rclone config
-# → New remote → Name: hermes-gdrive → Storage: Google Drive → Done
+## Google Drive Setup (Headless Server)
 
-# Enable auto cloud sync
+```bash
+# 1. Connect
+python3 scripts/hermes-shield.py connect
+
+# 2. On your laptop/phone:
+rclone authorize "drive"
+
+# 3. Send the JSON token:
+python3 scripts/hermes-shield.py token '{"access_token":"...","refresh_token":"...",...}'
+
+# 4. Enable auto backup
 python3 scripts/hermes-shield.py config set cloud_enabled=true
+```
 
-# Test upload
-python3 scripts/hermes-shield.py backup -c
+## Hermes Agent Integration
+
+User says: "بک‌آپ گوگل درایو هر ۲ روز بگیر"
+
+Hermes runs:
+```bash
+python3 scripts/hermes-shield.py setup-auto --cloud yes --interval 48
+```
+
+Hermes presents auth instructions to user. User sends token. Hermes applies:
+```bash
+python3 scripts/hermes-shield.py token '<JSON>'
 ```
 
 ## Automated Cloud Backups
 
 ```bash
-# Every 2 days (48 hours) — local + Google Drive
-# Add to crontab:
+# Every 2 days
 0 3 */2 * * /usr/bin/python3 /path/to/hermes-shield.py backup -l "auto" -c
-
-# Or use Hermes Agent cron:
-# Schedule: every 48h
-# Prompt: Run hermes-shield backup with label "auto" and upload to cloud
 ```
-
-## Commands
-
-| Command | Description |
-|---------|-------------|
-| `backup` | Create a full backup |
-| `backup -l "label"` | Create a labeled backup |
-| `backup -e -p PASS` | Create an encrypted backup |
-| `backup -c` | Backup + upload to Google Drive |
-| `restore` | Restore the latest backup |
-| `restore -f FILE` | Restore from a specific file |
-| `restore -t skills,config` | Restore only selected targets |
-| `list` | List local backups |
-| `list --cloud` | List cloud backups |
-| `push` | Upload latest to Google Drive |
-| `pull` | Download latest from Google Drive |
-| `pull -f FILE` | Download specific from Google Drive |
-| `verify FILE` | Verify backup integrity |
-| `stats` | Show statistics |
-| `config` | View configuration |
-| `config set key=value` | Update a config setting |
-| `setup-rclone` | Interactive Google Drive setup |
 
 ## Configuration
 
