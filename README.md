@@ -2,10 +2,10 @@
 
 # 🛡️ Hermes Shield | هرمس شیلد
 
-[![Version](https://img.shields.io/badge/Version-v1.1.0-blue.svg?style=for-the-badge)](https://github.com/your-username/hermes-shield)
+[![Version](https://img.shields.io/badge/Version-v1.3.0-blue.svg?style=for-the-badge)](https://github.com/h0j5bz0adh0-stack/hermes-shield)
 [![Python](https://img.shields.io/badge/Python-3.8+-green.svg?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
-[![Agent](https://img.shields.io/badge/Agent-Hermes%20%7C%20Claude%20%20OpenClaw-purple.svg?style=for-the-badge)](https://github.com/NousResearch/hermes-agent)
+[![Agent](https://img.shields.io/badge/Agent-Hermes%20%7C%20Claude%20Code%20%7C%20OpenClaw-purple.svg?style=for-the-badge)](https://github.com/NousResearch/hermes-agent)
 
 **Backup, Restore & Sync for AI Agent Configurations**
 **بک‌آپ، بازیابی و همگام‌سازی تنظیمات ایجنت هوش مصنوعی**
@@ -32,18 +32,14 @@
 - ✅ مقایسه دو بک‌آپ (Diff)
 - ✅ سازگار با **هرمس، Claude Code، OpenClaw**
 - ✅ **بک‌آپ خودکار روی گوگل درایو** هر ۲ روز
+- ✅ **سازگار با سرورهای headless** (بدون مرورگر)
 
 ### نصب سریع
 
 ```bash
-# کلون کنید
-git clone https://github.com/your-username/hermes-shield.git
+git clone https://github.com/h0j5bz0adh0-stack/hermes-shield.git
 cd hermes-shield
-
-# نصب وابستگی
 pip install cryptography
-
-# بک‌آپ بگیرید
 python3 scripts/hermes-shield.py backup
 ```
 
@@ -75,8 +71,10 @@ pip install cryptography
 | `diff A.tar.gz B.tar.gz` | مقایسه دو بک‌آپ |
 | `stats` | نمایش آمار |
 | `config` | نمایش تنظیمات |
-| `setup-rclone` | راه‌اندازی گوگل درایو |
-| `config set key=value` | تغییر تنظیمات |
+| `connect` | اتصال گوگل درایو (سرور headless) |
+| `setup` | راه‌اندازی تعاملی |
+| `setup-auto` | راه‌اندازی خودکار (برای هرمس) |
+| `token <JSON>` | اعمال توکن گوگل درایو |
 
 ### چیا بک‌آپ میشه؟
 
@@ -99,26 +97,26 @@ python3 scripts/hermes-shield.py backup -e -p "رمز-امن-من"
 python3 scripts/hermes-shield.py restore -f backup.tar.gz
 ```
 
-### بک‌آپ خودکار
+### اتصال گوگل درایو (سرور Headless)
 
 ```bash
-# اضافه کردن به crontab (هر روز ساعت ۳ صبح)
-0 3 * * * /usr/bin/python3 /path/to/hermes-shield.py backup -l "auto-daily"
+# ۱. اتصال
+python3 scripts/hermes-shield.py connect
+
+# ۲. روی لپ‌تاپ/موبایل:
+rclone authorize "drive"
+
+# ۳. توکن JSON رو اینجا بفرست:
+python3 scripts/hermes-shield.py token '{"access_token":"...","refresh_token":"...",...}'
+
+# ۴. فعال کردن بک‌آپ خودکار
+python3 scripts/hermes-shield.py config set cloud_enabled=true
 ```
 
-### راه‌اندازی گوگل درایو
+### بک‌آپ خودکار هر ۲ روز
 
 ```bash
-# یک‌بار تنظیم کنید (interactive)
-python3 scripts/hermes-shield.py setup-rclone
-
-# فعال کردن بک‌آپ خودکار ابری
-python3 scripts/hermes-shield.py config set cloud_enabled=true
-
-# تست آپلود
-python3 scripts/hermes-shield.py backup -c
-
-# بک‌آپ هر ۲ روز روی گوگل درایو
+# crontab
 0 3 */2 * * /usr/bin/python3 /path/to/hermes-shield.py backup -l "auto" -c
 ```
 
@@ -149,22 +147,15 @@ AI agents like Hermes, Claude Code, and OpenClaw store critical state locally �
 - ✅ Diff between backups
 - ✅ Cross-agent compatibility
 - ✅ **Google Drive sync** — auto backup every 2 days
+- ✅ **Headless server compatible** (no browser needed)
 
 ## 🚀 Quick Start
 
 ```bash
-# Clone
-git clone https://github.com/your-username/hermes-shield.git
+git clone https://github.com/h0j5bz0adh0-stack/hermes-shield.git
 cd hermes-shield
-
-# Install dependency
 pip install cryptography
-
-# Create your first backup
 python3 scripts/hermes-shield.py backup
-
-# List backups
-python3 scripts/hermes-shield.py list
 ```
 
 ## 📋 Commands
@@ -187,7 +178,10 @@ python3 scripts/hermes-shield.py list
 | `stats` | Show backup statistics |
 | `config` | View configuration |
 | `config set key=value` | Update a config setting |
-| `setup-rclone` | Interactive Google Drive setup |
+| `connect` | Connect Google Drive (headless) |
+| `setup` | Interactive setup wizard |
+| `setup-auto` | Non-interactive setup (for Hermes) |
+| `token <JSON>` | Apply Google Drive auth token |
 
 ## 🔒 Encryption
 
@@ -201,29 +195,34 @@ python3 scripts/hermes-shield.py backup -e -p "my-secure-password"
 python3 scripts/hermes-shield.py restore -f backup.tar.gz
 ```
 
-## ☁️ Google Drive Sync
+## ☁️ Google Drive Sync (Headless Server)
 
-One-time setup:
 ```bash
-python3 scripts/hermes-shield.py setup-rclone
-```
+# 1. Connect
+python3 scripts/hermes-shield.py connect
 
-Enable auto cloud sync:
-```bash
+# 2. On your laptop/phone:
+rclone authorize "drive"
+
+# 3. Send the JSON token to Hermes:
+python3 scripts/hermes-shield.py token '{"access_token":"...","refresh_token":"...",...}'
+
+# 4. Enable auto backup
 python3 scripts/hermes-shield.py config set cloud_enabled=true
 ```
 
-Auto backup every 2 days:
+## 🤖 Hermes Agent Integration
+
+When user says: "بک‌آپ گوگل درایو هر ۲ روز بگیر"
+
+Hermes runs:
 ```bash
-# Add to crontab
-0 3 */2 * * /usr/bin/python3 /path/to/hermes-shield.py backup -l "auto" -c
+python3 scripts/hermes-shield.py setup-auto --cloud yes --interval 48
 ```
 
-Manual upload/download:
+Outputs JSON with auth instructions. User sends token. Hermes applies it:
 ```bash
-python3 scripts/hermes-shield.py push    # Upload latest
-python3 scripts/hermes-shield.py pull    # Download latest
-python3 scripts/hermes-shield.py list --cloud  # List cloud backups
+python3 scripts/hermes-shield.py token '<JSON>'
 ```
 
 ## 📁 What Gets Backed Up
@@ -252,20 +251,22 @@ python3 scripts/hermes-shield.py list --cloud  # List cloud backups
 ```bash
 $ python3 scripts/hermes-shield.py stats
 
-🛡️  Hermes Shield — Stats
+🛡️  Hermes Shield v1.3.0 — Stats
 
-  Backups:       12
-  Total size:    2.3 MB
-  Latest:        2026-07-23 14:30
-  Max backups:   10
-  Encryption:    ✅
-  Auto backup:   ✅ Every 24h
-  Current data:  45.2 KB
+  Local backups:    12
+  Local size:       2.3 MB
+  Cloud backups:    5
+  Max local:        10
+  Max cloud:        5
+  Auto backup:      ✅ Every 48h
+  Cloud sync:       ✅
+  Google Drive:     ✅ Connected
+  Current data:     45.2 KB
 ```
 
 ## 🛣️ Roadmap
 
-- [ ] Google Drive / Dropbox upload
+- [ ] Dropbox / OneDrive support
 - [ ] S3 / Cloudflare R2 remote storage
 - [ ] Sync between multiple machines
 - [ ] Web dashboard
