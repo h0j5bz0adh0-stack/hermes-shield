@@ -63,3 +63,4 @@ echo "  python3 $INSTALL_DIR/scripts/hermes-shield.py backup"
 echo "  python3 $INSTALL_DIR/scripts/hermes-shield.py list"
 echo "  python3 $INSTALL_DIR/scripts/hermes-shield.py stats"
 echo ""
+
